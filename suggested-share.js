@@ -15,14 +15,15 @@ function loadSuggestedShare() {
 		FB.Event.subscribe('auth.statusChange', FB.bind(this.process, this));
     	this._ids = this.getAttribute("ids")
     	this._method = this.getAttribute("method")
+    	this._title = this.getAttribute("title")
+
 		if(this._interest == undefined) {
     	this._interest = this.dom.innerHTML
 		}
     	this._show_faces = this.getAttribute("show_faces")
 
 		if(FB.getSession()) {
-			this.dom.innerHTML = 'Loading...'
-			
+			this.dom.innerHTML = this._title ? '<h4>'+this._title+'</h4>Loading...' : 'Loading...'
 			if(this._ids) {
 				var pages = FB.Data.query('SELECT page_id, name FROM page WHERE page_id IN ('+this._ids+')');
 				var fans = FB.Data.query('SELECT id, name, pic FROM profile WHERE id IN \
@@ -32,7 +33,9 @@ function loadSuggestedShare() {
 				) LIMIT 20', FB.getSession().uid);
 			
 	 			FB.Data.waitOn([fans, pages], this.bind(function(args) {
-					this.dom.innerHTML = "Share with "
+					this.dom.innerHTML = this._title ? '<h4>'+this._title+'</h4>Share on Facebook with ' : 'Click a name to share on Facebook with '
+					current_node = document.createElement('span')
+					
 					
 					current_node = document.createElement('span')
 					fan_nodes = []
@@ -51,6 +54,8 @@ function loadSuggestedShare() {
 					switch(fan_nodes.length) {
 						case 0:
 							str = "You have no friends who like "
+							this.dom.style.display = 'none'
+							
 							break;
 						case 1:
 						
@@ -101,7 +106,7 @@ function loadSuggestedShare() {
 					
 					this.dom.appendChild(document.createTextNode(str))
 					if(this._interest) {
-						this.dom.appendChild(document.createTextNode(this._interest))
+						this.dom.innerHTML += this._interest
 					} else {
 					FB.Array.forEach(pages.value, this.bind(function(page,i,pages) {
 						page_node = document.createElement('a');
@@ -145,10 +150,12 @@ function loadSuggestedShare() {
 					}))
 				}	
 					}));
-		 			
+		 			this.dom.style.display = 'block'
+					
 				}				
 			} else {
-				this.dom.innerHTML = ""
+				
+				this.dom.style.display = 'none'
 			}
 		}
 });
